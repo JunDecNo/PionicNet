@@ -5,8 +5,11 @@ import tqdm
 import os
 import tarfile
 
-root_path = 'E:/OwnCode/PionicNet'
-
+# 如果系统是windows
+if os.name == 'nt':
+    root_path = 'E:/OwnCode/PionicNet'
+else:
+    root_path = '/mnt/sdd/user/zzjun/PionicNet'
 # 检查所有的文件夹是否存在, 不存在则创建
 if not os.path.exists(root_path + '/data/BioLiP/all_PDB'):
     os.mkdir(root_path + '/data/BioLiP/all_PDB')
@@ -58,34 +61,6 @@ with open(html_save_path, 'r') as file:  # 打开下载的html文件
         print('Failed to get the hrefs')
         exit(1)
 urls = [domain + href for href in hrefs]
-
-
-# 下载所有的文件_单线程
-# for url in tqdm.tqdm(urls, desc='Downloading files and extracting', ncols=100, unit='files'):
-#     # 下载链接
-#     path = ''
-#     # 根据链接选择保存路径
-#     if 'nr' in url and 'receptor' in url:  # 如果链接中包含nr和receptor, 蛋白质非冗余结构
-#         path = root_path + '/data/BioLiP/all_PDB_nr/Tar_BZ/'
-#     elif 'nr' not in url and 'receptor' in url:  # 如果链接中不包含nr, 但包含receptor, 蛋白质冗余结构
-#         path = root_path + '/data/BioLiP/all_PDB/Tar_BZ/'
-#     elif 'nr' in url and 'ligand' in url:  # 如果链接中包含nr和ligand, 配体非冗余结构
-#         path = root_path + '/data/BioLiP/all_PDB_nr/Tar_BZ_Li/'
-#     elif 'nr' not in url and 'ligand' in url:  # 如果链接中不包含nr, 但包含ligand, 配体冗余结构
-#         path = root_path + '/data/BioLiP/all_PDB/Tar_BZ_Li/'
-#     # 文件名
-#     file_name = url.split('/')[-1]  # 获取链接中的文件名
-#     save_path = path + file_name  # 压缩包保存路径
-#     nr_path = root_path + '/data/BioLiP/all_PDB_nr/'  # 蛋白质非冗余结构保存路径
-#     r_path = root_path + '/data/BioLiP/all_PDB/'  # 蛋白质冗余结构保存路径
-#     # 下载文件
-#     urllib.request.urlretrieve(url=url, filename=save_path)
-#     # 解压文件
-#     with tarfile.open(save_path) as tar:
-#         tar.extractall(path=nr_path if 'nr' in url else r_path)
-#     # 保存下载条目
-#     with open(root_path + '/data/BioLiP/download.txt', 'a') as file:
-#         file.write(url + '\t' + save_path + '\n')
 
 # 使用多线程下载文件
 def downloadTar(idx, start, end, urls):
