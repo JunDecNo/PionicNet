@@ -1,0 +1,4 @@
+*.pdb
+*.fa
+data/*
+temp/*
