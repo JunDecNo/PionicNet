@@ -9,7 +9,7 @@ import tarfile
 if os.name == 'nt':
     root_path = 'E:/OwnCode/PionicNet'
 else:
-    root_path = '/mnt/sdd/user/zzjun/PionicNet'
+    root_path = '/home/PionicNet'
 # 检查所有的文件夹是否存在, 不存在则创建
 if not os.path.exists(root_path + '/data/BioLiP/all_PDB'):
     os.mkdir(root_path + '/data/BioLiP/all_PDB')
@@ -21,8 +21,8 @@ if not os.path.exists(root_path + '/data/BioLiP/all_PDB_nr'):
     os.mkdir(root_path + '/data/BioLiP/all_PDB_nr')
     os.mkdir(root_path + '/data/BioLiP/all_PDB_nr/Tar_BZ')
     os.mkdir(root_path + '/data/BioLiP/all_PDB_nr/Tar_BZ_Li')
-    os.mkdir(root_path + '/data/BioLiP/all_PDB_nr/Ligand')
-    os.mkdir(root_path + '/data/BioLiP/all_PDB_nr/Receptor')
+    os.mkdir(root_path + '/data/BioLiP/all_PDB_nr/Ligand_NR')
+    os.mkdir(root_path + '/data/BioLiP/all_PDB_nr/Receptor_NR')
 
 url = 'https://zhanggroup.org/BioLiP2/weekly.html'
 headers = {
@@ -64,6 +64,10 @@ urls = [domain + href for href in hrefs]
 
 # 使用多线程下载文件
 def downloadTar(idx, start, end, urls):
+    # 根据中断情况重新下载，找到最后一个包含ligand_nr的链接
+    with open(root_path + f'/data/BioLiP/download_{idx}.txt', 'r') as file_name:
+        lines = file_name.readlines()
+        start += len(lines)
     for url in tqdm.tqdm(urls[start:end], desc='Downloading files and extracting', ncols=100, unit='files', leave=False):
         # 下载链接
         path = ''
@@ -82,7 +86,7 @@ def downloadTar(idx, start, end, urls):
         nr_path = root_path + '/data/BioLiP/all_PDB_nr/'  # 蛋白质非冗余结构保存路径
         r_path = root_path + '/data/BioLiP/all_PDB/'  # 蛋白质冗余结构保存路径
         # 下载文件
-        urllib.request.urlretrieve(url=url, filename=save_path)
+        urllib.request.urlretrieve(url=url,filename=save_path)
         # 解压文件
         with tarfile.open(save_path) as tar:
             tar.extractall(path=nr_path if 'nr' in url else r_path)

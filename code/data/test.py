@@ -1,3 +1,4 @@
+import re
 import tarfile
 import threading
 from time import sleep
@@ -83,24 +84,32 @@ import tqdm
 #
 # print("All threads have finished.")
 
-from time import sleep
-from tqdm import trange, tqdm
-from multiprocessing import Pool, Lock
+# from time import sleep
+# from tqdm import trange, tqdm
+# from multiprocessing import Pool, Lock
 
-L = list(range(9))
+# L = list(range(9))
 
-def progresser(n):
-    interval = 0.001 / (n + 2)
-    total = 5000
-    text = "#{}, est. {:<04.2}s".format(n, interval * total)
-    for _ in trange(total, desc=text, position=n):
-        sleep(interval)
+# def progresser(n):
+#     interval = 0.001 / (n + 2)
+#     total = 5000
+#     text = "#{}, est. {:<04.2}s".format(n, interval * total)
+#     for _ in trange(total, desc=text, position=n):
+#         sleep(interval)
 
 
-if __name__ == "__main__":
-    p = Pool(
-        len(L),
-        initializer=tqdm.set_lock,
-        initargs=(Lock(),),
-    )
-    p.map(progresser, L)
+# if __name__ == "__main__":
+#     p = Pool(
+#         len(L),
+#         initializer=tqdm.set_lock,
+#         initargs=(Lock(),),
+#     )
+#     p.map(progresser, L)
+root_path = 'E:\OwnCode\PionicNet'
+idx = 0
+start = 0 
+with open(root_path + f'/data/BioLiP/download_{idx}.txt', 'r') as file_name:
+    lines = file_name.readlines()
+    start += len(lines)
+print(start)
+print(3956//16)
