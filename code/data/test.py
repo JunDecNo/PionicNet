@@ -105,11 +105,16 @@ import tqdm
 #         initargs=(Lock(),),
 #     )
 #     p.map(progresser, L)
+# import os
 root_path = 'E:\OwnCode\PionicNet'
-idx = 0
-start = 0 
-with open(root_path + f'/data/BioLiP/download_{idx}.txt', 'r') as file_name:
-    lines = file_name.readlines()
-    start += len(lines)
-print(start)
-print(3956//16)
+# idx = 0
+# start = 0 
+# with open(root_path + f'/data/BioLiP/download_{idx}.txt', 'r') as file_name:
+#     lines = file_name.readlines()
+#     start += len(lines)
+# print(start)
+# print(3956//16)
+# print(os.getcwd())
+for idx in range(16):
+    with open(root_path + f'\code/temp/download_{idx}.txt', 'a') as file_name:
+        pass

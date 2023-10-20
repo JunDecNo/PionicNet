@@ -9,7 +9,7 @@ import tarfile
 if os.name == 'nt':
     root_path = 'E:/OwnCode/PionicNet'
 else:
-    root_path = '/home/PionicNet'
+    root_path = '/mnt/sdd/user/zzjun/OwnCode/OneDot'
 # 检查所有的文件夹是否存在, 不存在则创建
 if not os.path.exists(root_path + '/data/BioLiP/all_PDB'):
     os.mkdir(root_path + '/data/BioLiP/all_PDB')
@@ -91,8 +91,7 @@ def downloadTar(idx, start, end, urls):
         with tarfile.open(save_path) as tar:
             tar.extractall(path=nr_path if 'nr' in url else r_path)
         # 保存下载条目
-        with open(root_path + f'/data/BioLiP/download_{idx}.txt', 'a') as file_name:
-            file_name.write(url + '\t' + save_path + '\n')
+        
 
 
 threads = []
