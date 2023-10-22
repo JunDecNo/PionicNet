@@ -97,17 +97,34 @@
 #         initargs=(Lock(),),
 #     )
 #     p.map(progresser, L)
-# import os
-root_path = 'E:\OwnCode\PionicNet'
-# idx = 0
-# start = 0 
-# with open(root_path + f'/data/BioLiP/download_{idx}.txt', 'r') as file_name:
-#     lines = file_name.readlines()
-#     start += len(lines)
-# print(start)
-# print(3956//16)
-# print(os.getcwd())
-for idx in range(16):
-    with open(root_path + f'\code/temp/download_{idx}.txt', 'a') as file_name:
-        pass
+# # import os
+# root_path = 'E:\OwnCode\PionicNet'
+# # idx = 0
+# # start = 0 
+# # with open(root_path + f'/data/BioLiP/download_{idx}.txt', 'r') as file_name:
+# #     lines = file_name.readlines()
+# #     start += len(lines)
+# # print(start)
+# # print(3956//16)
+# # print(os.getcwd())
+# for idx in range(16):
+#     with open(root_path + f'\code/temp/download_{idx}.txt', 'a') as file_name:
+#         pass
 
+str1 = '10000000000000001000000000000010000000000000000000000000000000000000000000'
+str2 = '01000000000000000100000000000100000000000000000000000000000000000000000000'
+def orStr(str1,str2):
+    if len(str1)!=len(str2):
+        raise ValueError
+    l1 =list(str1)
+    l2 = list(str2)
+    res = []
+    for i in range(len(str1)):
+        i1 = str1[i]
+        i2 = str2[i]
+        if i1=='1' or i2=='1':
+            res.append('1')
+        else:
+            res.append('0')
+    return ''.join(res)
+print(orStr(str1,str2))
