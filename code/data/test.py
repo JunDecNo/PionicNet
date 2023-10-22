@@ -1,11 +1,3 @@
-import re
-import tarfile
-import threading
-from time import sleep
-
-import tqdm
-
-
 # 用'rb'模式打开.tar.bz2文件
 # with tarfile.open('E:\OwnCode\PionicNet\data\BioLiP\\all_PDB\\receptor_08.tar.bz2', 'r:bz2') as tar:
 #     # 列出文件列表
@@ -118,3 +110,4 @@ root_path = 'E:\OwnCode\PionicNet'
 for idx in range(16):
     with open(root_path + f'\code/temp/download_{idx}.txt', 'a') as file_name:
         pass
+
