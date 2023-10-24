@@ -48,7 +48,7 @@ for ionic in ionic_list:
                 if item != temp:  # 如果item非空同时不与上一个相同就加入的cluster中
                     target.write(item)
                     temp = item
-print('dataset finished!')                   
+print('sequence dataset finished!')                   
 
 for ionic in ionic_list:
     with open(fasta_ligand_re+ionic+'_label.fa', 'r') as source:
@@ -71,4 +71,45 @@ for ionic in ionic_list:
                     temp_label=label
                 elif name == temp_name:  # 如果名称一样则修改label
                     temp_label = orStr(temp_label,label)
-print('nr dataset finished!')        
+print('label dataset finished!') 
+
+
+for ionic in ionic_list:
+    with open(fasta_ligand_nr+ionic+'.fa', 'r') as source:
+        with open(cluster_nr+ionic+'.fa', 'a') as target:
+            temp = ''
+            # 每次读取两行
+            while True:
+                name = source.readline()
+                label = source.readline()
+                item = name + label
+                # item就是一个条目
+                if item == '':
+                    break
+                if item != temp:  # 如果item非空同时不与上一个相同就加入的cluster中
+                    target.write(item)
+                    temp = item
+print('nr sequence dataset finished!')                   
+
+for ionic in ionic_list:
+    with open(fasta_ligand_nr+ionic+'_label.fa', 'r') as source:
+        with open(cluster_nr+ionic+'_label.fa', 'a') as target:
+            #temp保存同名的最后一行，如果与target的最后一行同名，就将1加上去
+            temp_name = source.readline()
+            temp_label = source.readline()
+            # 每次读取两行
+            while True:
+                name = source.readline()
+                label = source.readline()
+                item = name + label
+                # item就是一个条目
+                if name == '':
+                    target.write(temp_name+temp_label)
+                    break
+                if name != temp_name:  # 如果item非空同时不与上一个相同就加入的cluster中
+                    target.write(temp_name+temp_label)
+                    temp_name=name
+                    temp_label=label
+                elif name == temp_name:  # 如果名称一样则修改label
+                    temp_label = orStr(temp_label,label)
+print('nr label dataset finished!')         

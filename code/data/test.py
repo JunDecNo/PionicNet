@@ -111,20 +111,27 @@
 #     with open(root_path + f'\code/temp/download_{idx}.txt', 'a') as file_name:
 #         pass
 
-str1 = '10000000000000001000000000000010000000000000000000000000000000000000000000'
-str2 = '01000000000000000100000000000100000000000000000000000000000000000000000000'
-def orStr(str1,str2):
-    if len(str1)!=len(str2):
-        raise ValueError
-    l1 =list(str1)
-    l2 = list(str2)
-    res = []
-    for i in range(len(str1)):
-        i1 = str1[i]
-        i2 = str2[i]
-        if i1=='1' or i2=='1':
-            res.append('1')
-        else:
-            res.append('0')
-    return ''.join(res)
-print(orStr(str1,str2))
+# str1 = '10000000000000001000000000000010000000000000000000000000000000000000000000'
+# str2 = '01000000000000000100000000000100000000000000000000000000000000000000000000'
+# def orStr(str1,str2):
+#     if len(str1)!=len(str2):
+#         raise ValueError
+#     l1 =list(str1)
+#     l2 = list(str2)
+#     res = []
+#     for i in range(len(str1)):
+#         i1 = str1[i]
+#         i2 = str2[i]
+#         if i1=='1' or i2=='1':
+#             res.append('1')
+#         else:
+#             res.append('0')
+#     return ''.join(res)
+# print(orStr(str1,str2))
+
+import torch
+from torch import nn 
+
+torch_ = torch.randn(2,3,4)
+print(torch_)
+print(torch_[...,:1:])
