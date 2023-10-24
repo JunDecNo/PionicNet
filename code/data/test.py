@@ -134,4 +134,6 @@ from torch import nn
 
 torch_ = torch.randn(2,3,4)
 print(torch_)
+# 删除倒数第二维的第一个元素
+
 print(torch_[...,:1:])
