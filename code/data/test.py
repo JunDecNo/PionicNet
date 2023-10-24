@@ -132,6 +132,6 @@
 import torch
 from torch import nn 
 
-torch_ = torch.randn(2,3,4)
+torch_ = torch.randn(2,3,3,4)
 print(torch_)
-print(torch_[...,:1:])
+print(torch_[:,1:])

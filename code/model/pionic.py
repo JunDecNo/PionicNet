@@ -2,6 +2,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from transformer import Transformer
+
+
 # 定义pionic Model
 class Pionic(nn.Module):
     def __init__(self, feature_dim, hidden_dim=64, layers=4, num_heads=4, dropout=0.1):
@@ -14,9 +16,9 @@ class Pionic(nn.Module):
         )
         # 定义了transformer encoder层
         self.encoder = nn.ModuleList([
-            Transformer(hidden_dim, num_heads, dropout) 
+            Transformer(hidden_dim, num_heads, dropout)
             for _ in range(layers)
-            ])
+        ])
         # mlp用于接收transformer的输出，并且只对除第一个向量以外的向量进行处理
         self.mlp = nn.Sequential(
             nn.LayerNorm(hidden_dim, eps=1e-6),
@@ -24,15 +26,22 @@ class Pionic(nn.Module):
             nn.Linear(hidden_dim, hidden_dim),
             nn.LeakyReLU(),
             nn.LayerNorm(hidden_dim, eps=1e-6),
-            nn.Linear(hidden_dim,1,bias=True)
+            nn.Linear(hidden_dim, 1, bias=True)
         )
-    
+
     def forward(self, x, mask=None):
         # 对数据进行input处理
         x = self.input(x)
         # encoder处理
         for layer in self.encoder:
             x = layer(x, mask)
+        # 取出除第一个向量以外的向量
+        # x = x[:,1:]
+        # x = x.continuous()
         # mlp完成节点分类
         x = self.mlp(x)
         return x
+
+
+def PnModel(feature_dim, hidden_dim=64, layers=1, num_heads=4, dropout=0.1):
+    return Pionic(feature_dim, hidden_dim, layers, num_heads, dropout)
