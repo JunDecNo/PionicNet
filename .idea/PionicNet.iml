@@ -6,7 +6,7 @@
       <excludeFolder url="file://$MODULE_DIR$/data/BioLiP/all_PDB_nr" />
       <excludeFolder url="file://$MODULE_DIR$/data/class" />
     </content>
-    <orderEntry type="jdk" jdkName="OneDot" jdkType="Python SDK" />
+    <orderEntry type="jdk" jdkName="onedot" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
   </component>
 </module>

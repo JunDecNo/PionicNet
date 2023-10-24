@@ -132,8 +132,12 @@
 import torch
 from torch import nn 
 
-torch_ = torch.randn(2,3,4)
+torch_ = torch.randn(2,3,3,4)
 print(torch_)
+<<<<<<< HEAD
 # 删除倒数第二维的第一个元素
 
 print(torch_[...,:1:])
+=======
+print(torch_[:,1:])
+>>>>>>> 8ef0df7e7bec03cf436c01627fffa093ad5ed772
