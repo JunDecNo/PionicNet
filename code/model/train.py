@@ -1,7 +1,9 @@
+
+
 # pytorch训练模块
 import torch
 from torch import nn
-from pionic import PnModel
+from model import PnModel
 
 if __name__ == "__main__":
     seq = 50

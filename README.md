@@ -38,11 +38,21 @@ PDB: <https://www.rcsb.org/>
 
 金属离子主要有以下特征：
 
- - 正电荷。
- - 金属性
- - 固态状态
- - 金属晶体结构
- - 反应性
- - 色彩
- - 多价性
- - 催化性
+- 正电荷。
+- 金属性
+- 固态状态
+- 金属晶体结构
+- 反应性
+- 色彩
+- 多价性
+- 催化性
+
+### data
+
+- BioLiP fold 保存了下载文件log和从BioLiP中下载的所有pdb文件
+- class fold 保存了没有经过配体序列合并的的fasta文件和pdb文件
+- fasta fold 保存了经过配体序列合并后的fasta文件
+- test fold 保存了测试集
+- train fold 保存了训练集
+- valid fold 保存了验证集
+  

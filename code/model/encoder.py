@@ -18,8 +18,7 @@ class SelfAttention(nn.Module):
         # 修改后的x的形状为[batch_size, seq_len, num_heads, attention_head_size]
         new_x_shape = x.size()[:-1] + (self.num_heads, self.attention_head_size)  # 这里的size()[:-1]是指除了最后一维的其他维度
         x = x.view(*new_x_shape)  # view()函数作用是将一个多行的Tensor,拼接成一行
-        print('x shape:', x.shape)
-        return x.permute(0, 1, 3, 2)  # permute(0, 2, 1)将第二维和第三维交换位置
+        return x.transpose(-1,-2)  # permute(0, 2, 1)将第二维和第三维交换位置
 
     def forward(self, q, k, v, mask=None):
         # q, k, v分别表示transformer中的Q,K,V用于计算两两之间的attention

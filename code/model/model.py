@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from transformer import Transformer
+from encoder import Transformer
 
 
 # 定义pionic Model
