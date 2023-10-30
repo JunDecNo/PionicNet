@@ -129,9 +129,16 @@
 #     return ''.join(res)
 # print(orStr(str1,str2))
 
-import torch
-from torch import nn 
+# import torch
+# from torch import nn 
 
-torch_ = torch.randn(2,3,3,4)
-print(torch_)
-print(torch_[:,1:])
+# torch_ = torch.randn(2,3,3,4)
+# print(torch_)
+# print(torch_[:,1:])
+
+import numpy as np
+
+
+text = '[ 1  2 3]'
+# x= [np.float64(x) for x in text.strip('[]').split(' ')]
+print(np.fromstring(text.strip('[]'), dtype=np.float64, sep=' '))
