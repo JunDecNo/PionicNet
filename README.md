@@ -82,4 +82,7 @@ PDB: <https://www.rcsb.org/>
 - test fold 保存了测试集
 - train fold 保存了训练集
 - valid fold 保存了验证集
+- graph fold 保存各个配体对应蛋白质结构图
+- logs fold 保存每次处理的记录
+- sets fold 保存了所有需要  的关键信息
   

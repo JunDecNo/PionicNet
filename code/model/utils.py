@@ -28,5 +28,7 @@ def calTheta(x, y):
     return np.degrees(np.arccos(np.dot(x, y) / (np.linalg.norm(x) * np.linalg.norm(y))))
 
 
+
+
 if __name__ == '__main__':
     print(calTheta([0, 0, 9], [0,1,0]))  
