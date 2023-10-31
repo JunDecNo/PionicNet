@@ -10,13 +10,14 @@ from Bio import PDB
 from pyfastx import Fasta
 from tqdm import tqdm
 from scipy.spatial import distance
-from utils import pd2list
+from utils import *
+import utils
 
 root_path = os.getcwd().replace('\\', '/').split('/')
 root_path = root_path[0: len(root_path) - 2]
 root_path = '/'.join(root_path)
 save_path = root_path + '/data/sets'
-
+ionic_list = ['ZN', 'MG', 'CA', 'MN', 'FE', 'CU', 'FE2', 'NA', 'K', 'NI', 'G']
 def getSeqInfo(protein, ligand, nr):
     """
     Args:
@@ -233,15 +234,56 @@ def savePosition(path,nr,ligand,name):
   
 def calAdjacency(pdb_path): 
     pos_df = pd.read_csv(pdb_path,converters={'pos_CA':pd2list,'pos_C':pd2list,'pos_SC':pd2list})
+    res_name = pos_df['residue'].values
+    res_id = pos_df['id'].values
     pos_CA = np.vstack(pos_df['pos_CA'].values)
     pos_C = np.vstack(pos_df['pos_C'].values)
     pos_SC = np.vstack(pos_df['pos_SC'].values)
     # 都是二维列表,计算出邻接矩阵
     dis_dict = {
+        'residue':res_name,
+        'id':res_id,
         'dis_CA':np.sqrt(np.sum((pos_CA[:,np.newaxis]-pos_CA)**2,axis=-1)),
         'dis_C':np.sqrt(np.sum((pos_C[:,np.newaxis]-pos_C)**2,axis=-1)),
         'dis_SC':np.sqrt(np.sum((pos_SC[:,np.newaxis]-pos_SC)**2,axis=-1))}
     return dis_dict
+
+def calEdge(adj_path,pos_path,radius=5):
+    """
+        默认半径为5
+    """
+    # 考虑考虑edge要包括哪些信息。
+    # 与原点的距离(2D)，两个点间的夹角(与原点计算)(1D)，两个点间的距离(1D)
+    # 获取邻接矩阵
+    dis_mat = pickle.load(open(adj_path,'rb'))
+    dis_X = [dis_mat['dis_CA'],dis_mat['dis_C'],dis_mat['dis_SC']]
+    # dis_x分别是不同的链对应的距离矩阵，由此计算出边的信息
+    pos_df = pd.read_csv(pos_path,converters={'pos_CA':pd2list,'pos_C':pd2list,'pos_SC':pd2list})
+    res_name = pos_df['residue'].values
+    res_id = pos_df['id'].values
+    pos_X = [np.vstack(pos_df['pos_CA'].values),np.vstack(pos_df['pos_C'].values),np.vstack(pos_df['pos_SC'].values)]
+    edge_X = [[],[],[]]
+    # 使用序号即id作为边的唯一标识
+    id = dis_mat['id']
+    # 定义三个字典保存边的信息
+    # 边信息为i,j, theta, di, dj
+    for k in range(len(dis_X)):
+        for i in range(len(id)):# 一次循环就是一行
+            tmp_list = []
+            di = dis_X[k][0][i]# i与原点的距离
+            tmp_list.append([i,i,0,di,di])
+            for j in range(len(id)):
+                if i!=j and dis_X[k][i][j] < radius: 
+                    dj = dis_X[k][0][j]# j与原点的距离
+                    theta = utils.calTheta(pos_X[k][i]-pos_X[k][0],pos_X[k][j]-pos_X[k][0])# i与j的夹角
+                    if not [i,j,theta,di,dj] in tmp_list:
+                        tmp_list.append([i,j,theta,di,dj])
+            if i+1 < len(id) and not [i,i+1,utils.calTheta(pos_X[k][i]-pos_X[k][0],pos_X[k][i+1]-pos_X[k][0]),di,dis_X[k][0][i+1]] in tmp_list:
+                tmp_list.append([i,i+1,utils.calTheta(pos_X[k][i]-pos_X[k][0],pos_X[k][i+1]-pos_X[k][0]),di,dis_X[k][0][i+1]])
+            if i-1 >= 0 and not [i,i-1,utils.calTheta(pos_X[k][i]-pos_X[k][0],pos_X[k][i-1]-pos_X[k][0]),di,dis_X[k][0][i-1]] in tmp_list:
+                tmp_list.append([i,i-1,utils.calTheta(pos_X[k][i]-pos_X[k][0],pos_X[k][i-1]-pos_X[k][0]),di,dis_X[k][0][i-1]])
+            edge_X[k].append(tmp_list)  
+    return {'id':id,'residue':res_name,'edge_CA':edge_X[0],'edge_C':edge_X[1],'edge_SC':edge_X[2]}     
    
 def residue_feature(pdb_file):
     """
@@ -345,7 +387,7 @@ if __name__ == '__main__':
     # savePosition('E:\\OwnCode\\PionicNet\\data\\class','nr','K','1d7rA.pdb')
     #防止重复处理设置两个log文件
     # for i in ['nr']:
-    #     for lig in ['ZN', 'MG', 'CA', 'MN', 'FE', 'CU', 'FE2', 'NA', 'K', 'NI', 'G']:
+    #     for lig in ionic_list:
     #         # 使用进度条
     #         if not os.path.exists(save_path+'/Position/'+i+'/save_pos_'+i+lig+'.log'):
     #             with open(save_path+'/Position/'+i+'/save_pos_'+i+lig+'.log','w') as log:
@@ -358,9 +400,58 @@ if __name__ == '__main__':
     #                 with open(save_path+'/Position/'+i+'/save_pos_'+i+lig+'.log','a') as log:
     #                     log.write(lig+'_'+name+'\n')
     # residue_feature('E:/OwnCode/PionicNet/data/class/nr/pdb/NI/1a5oC.pdb') # 根据输出，pdb存在一些极端的情况，后续需要处理
-    # 计算邻接矩阵
-    data = calAdjacency('E:/OwnCode/PionicNet/data/sets/nr/Position/CA/1a0jA_pos.csv')
-    print(data) `  `
-    with open('array.pkl','wb') as file:
-        array = pickle.dump(data,file)
+    # 根据位置文件计算邻接矩阵
+    # for i in ['nr']:
+    #     for lig in ionic_list:
+    #         # 使用进度条
+    #         log_path = save_path+'/'+i+'/Adjacency/save_adj_'+i+lig+'.log'
+    #         pos_path = save_path+'/'+i+'/Position/'+lig+'/'
+    #         adj_path = save_path+'/'+i+'/Adjacency/'+lig+'/'
+    #         touch(log_path)
+    #         logs= utils.getText(log_path)
+    #         for name in tqdm(os.listdir(pos_path),ncols=100, unit='files'):
+    #             if not lig+'_'+name+'\n' in logs:  
+    #                 data = calAdjacency(pos_path+name)
+    #                 # 保存到Adjacency文件夹中
+    #                 with open(adj_path+name[:6]+'adj.pkl','wb') as file:
+    #                     array = pickle.dump(data,file)  
+    #                 # log文件记录
+    #                 utils.appendText(log_path,lig+'_'+name+'\n')
+    # data = calEdge('E:/OwnCode/PionicNet/data/sets/nr/Adjacency/NI/1a5oC_adj.pkl','E:/OwnCode/PionicNet/data/sets/nr/Position/NI/1a5oC_pos.csv')
+    # 通过pdb文件计算特征并保存为csv文件
+    # utils.makeDir(save_path+'/nr/Edge/',ionic_list)
+    # with open(save_path+'/nr/Edge/NI/1a5oC_edge.pkl','wb') as file:
+    #     array = pickle.dump(data,file)
+    
+    # with open(save_path+'/nr/Edge/NI/1a5oC_edge.pkl','rb') as file:
+    #     array = pickle.load(file)
+    #     print(array['id'])
+    for k in ['nr']:
+        for lig in ionic_list:
+            pkl_path = save_path + '/' + k + '/Adjacency/' + lig + '/'
+            csv_path = save_path + '/' + k + '/Position/' + lig + '/'
+            edge_path = save_path + '/' + k + '/Edge/' + lig + '/'
+            log_path = save_path+'/'+k+'/Edge/save_edge_'+k+lig+'.log'
+            touch(log_path)
+            pkl_list = os.listdir(pkl_path)
+            csv_list = os.listdir(csv_path)
+            logs= utils.getText(log_path)
+            for i in tqdm(range(len(pkl_list)),ncols=100, unit='files'):
+                name = pkl_list[i]
+                if not lig+'_'+name+'\n' in logs:
+                    data = calEdge(pkl_path+pkl_list[i],csv_path+csv_list[i])
+                    with open(pkl_path+pkl_list[i],'wb') as file:
+                        array = pickle.dump(data,file)
+                    utils.appendText(log_path,lig+'_'+name+'\n')
+            
+    
+    
+    
+    
+   
+    
+        
+    # residue_feature('E:/OwnCode/PionicNet/data/class/nr/pdb/NI/1a5oC.pdb') # 根据输出，pdb存在一些极端的情况，后续需要处理
+    pass
+    
                    
