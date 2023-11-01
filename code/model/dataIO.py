@@ -12,13 +12,14 @@ from tqdm import tqdm
 from scipy.spatial import distance
 from utils import *
 import utils
-
+from transformers import T5EncoderModel, T5Tokenizer
+import h5py
 root_path = os.getcwd().replace('\\', '/').split('/')
 root_path = root_path[0: len(root_path) - 2]
 root_path = '/'.join(root_path)
 save_path = root_path + '/data/sets'
 ionic_list = ['ZN', 'MG', 'CA', 'MN', 'FE', 'CU', 'FE2', 'NA', 'K', 'NI', 'G']
-
+device = torch.device('cuda:0' if torch.cuda.is_available() else 'cpu')
 
 def getSeqInfo(protein, ligand, nr):
     """
@@ -332,8 +333,15 @@ def getSSBOND(pdb_path):
 
 def getGO(pdb_path):
     
-    pass
-
+    pass 
+        
+def CreateModel(model_dir): 
+    vocab = T5Tokenizer.from_pretrained(model_dir, do_lower_case=False)
+    model = T5EncoderModel.from_pretrained(model_dir).to(device).eval()
+    if torch.cuda.device_count() > 1:
+        print("使用{}张卡".format(torch.cuda.device_count()))
+        model = nn.DataParallel(model)
+    return model, vocab
 
 def residue_feature(pdb_file):
     """
@@ -415,6 +423,49 @@ def pdb2graph(pdb):
     # 保存标签信息
 
     # 保存图结构信息
+def RunSeqFeature(max_seq_len=1000,max_batch = 50,max_residues = 4000):
+    """
+        总的来说，就是将序列信息转换成特征信息
+        所以不太注重序列的长度,只需要与其对应即可,精简一下代码
+    """
+    print('###################开始执行##############')
+    model,vocab = CreateModel(root_path + '/code/tools/ProtT5')
+    print('模型定义完成')
+    emb_dict = {}
+    batch = []
+    for i in ['nr']:
+        for lig in ionic_list:
+            fasta_path = root_path + '/data/fasta/ionic/' + i + '/' + lig + '.fa'
+            fea_path = save_path + '/' + i + '/Embed/' + lig + '.emb'
+            seq_dict = {record.name:record.seq for record in Fasta(fasta_path)}
+            print('开始执行：',i,lig,'共有',len(seq_dict),'条序列')
+            for idx,(pdb_id, seq) in tqdm(enumerate(seq_dict.items()),ncols=100, unit='items'):
+                seq = seq.replace('U','X').replace('Z','X').replace('O','X')
+                seq_len = len(seq)
+                seq = ' '.join(list(seq)) # 为什么要加入空格？
+                batch.append((pdb_id,seq,seq_len)) #取这么多batch一次性处理
+                # count residues in current batch and add the last sequence length to
+                # avoid that batches with (n_res_batch > max_residues) get processed 
+                n_res_batch = sum([ s_len for  _, _, s_len in batch ]) + seq_len 
+                # 判断条件依次是：batch的长度，残基的长度，序列的长度，是否是最后一个
+                if len(batch) >= max_batch or n_res_batch>=max_residues  or seq_len>max_seq_len or idx == len(seq_dict)-1:
+                    pdb_ids, seqs, seq_lens = zip(*batch)
+                    batch = list()
+                    token_encoding = vocab.batch_encode_plus(seqs, add_special_tokens=True, padding="longest")
+                    input_ids      = torch.tensor(token_encoding['input_ids']).to(device)
+                    attention_mask = torch.tensor(token_encoding['attention_mask']).to(device)
+                    with torch.no_grad():
+                        embedding_repr = model(input_ids, attention_mask=attention_mask) # 得到特征提取信息          
+                    for batch_idx, identifier in enumerate(pdb_ids): # 保存了pdb的名称 odb_idx是序号，identifier是id
+                        s_len = seq_lens[batch_idx] # s_len就是序列的长度
+                        # slice-off padded/special tokens
+                        emb = embedding_repr.last_hidden_state[batch_idx,:s_len]
+                        emb_dict[ identifier ] = emb.detach().cpu().numpy().squeeze()
+                        print(identifier,emb_dict[ identifier ])
+            with open(fea_path, "wb") as emb_file:
+                pickle.dump(emb_dict, emb_file)
+    return 
+    
 
 
 if __name__ == '__main__':
@@ -499,4 +550,30 @@ if __name__ == '__main__':
     #                 utils.appendText(log_path,lig+'_'+name+'\n')
 
     # residue_feature('E:/OwnCode/PionicNet/data/class/nr/pdb/NI/1a5oC.pdb') # 根据输出，pdb存在一些极端的情况，后续需要处理
+    
+    # 获取fasta文件
+    RunSeqFeature()
+    # 打开 HDF5 文件
+    # file = h5py.File("E:/OwnCode/PionicNet/data/sets/nr/Embed/G.emb", "r")
+
+    # # 列出文件中的数据集（或组）
+    # dataset_names = list(file.keys())  # 获取数据集或组的名称
+
+    # # 选择要读取的数据集
+    # dataset_name = "your_dataset_name"  # 替换为你的数据集名称
+
+    # if dataset_name in file:
+    #     # 从数据集中读取数据
+    #     dataset = file[dataset_name]
+    #     data = dataset[:]
+    #     # 或者使用切片操作来读取部分数据，例如 dataset[0:10]
+
+    #     # 处理数据
+    #     # 在这里，你可以对读取的数据进行进一步处理
+
+    # # 关闭文件
+    # file.close()
+    # G_fea = pickle.load(open('E:/OwnCode/PionicNet/data/sets/nr/Embed/G.emb','rb'))
+    # print(len(G_fea['7pd3z']))
+        
     pass
